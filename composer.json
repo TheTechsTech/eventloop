@@ -1,0 +1,50 @@
+{
+    "name": "uppes/eventloop",
+    "description": "An library required for any asynchronous PHP programming.",
+    "keywords": [
+        "events",
+        "loop",
+        "event loop",
+        "event driven",
+        "tick",
+        "next tick",
+        "pcntl",
+        "process",
+        "process control",
+        "stream",
+        "stream select",
+        "async",
+        "asynchronous",
+        "coroutine",
+        "generators"
+    ],
+    "homepage": "https://github.com/uppes/eventloop",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lawrence Stubbs",
+            "email": "lstubbs@techno.express"
+        }
+    ],
+    "require": {
+        "php": ">7.0"
+    },
+    "autoload": {
+        "psr-4": {
+			"Async\\Loop\\": "Loop/",
+			"Async\\Coroutine\\": "Coroutine/"
+		}
+    },
+    "require-dev": {
+        "phpunit/phpunit": ">5.7"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Async\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --bootstrap vendor/autoload.php tests"
+    }
+}
