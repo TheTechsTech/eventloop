@@ -101,24 +101,15 @@ class Loop extends Scheduler implements LoopInterface
 			self::$loop->writeStreams = [];
 			self::$loop->readStreams = [];
 			self::$loop->timers = [];		
-			self::$loop->process = null;			
-			self::$loop = null;	
+			self::$loop->process = null;	
             if (self::$loop->signals && self::$loop->pcntl) {
                 self::$loop->signals = null;
-            }	
+            }
+
+			self::$loop = null;	
 		}
 	}
-	
-	/**
-	 * Setup Signal listener.
-	 */
-	public function initSignals()
-	{		
-		if (!$this->signals && $this->pcntl) {
-			$this->signals = new Signaler();
-		}
-	}
-			
+				
     /**
      * Executes a function after x seconds.
      */
@@ -276,7 +267,7 @@ class Loop extends Scheduler implements LoopInterface
             || $this->timers
             || $this->isSignaling()
             || $this->isMonitoring()
-            || !$this->taskQueue->isEmpty();
+            || $this->isScheduling();
     }
 
     /**
@@ -348,10 +339,19 @@ class Loop extends Scheduler implements LoopInterface
                 }
             }//
         } elseif ($this->running 
-            && ($this->addTicks || $this->timers || $this->isSignaling() || $this->isMonitoring())
+            && ($this->addTicks 
+                || $this->timers 
+                || $this->isSignaling() 
+                || $this->isMonitoring() 
+                || $this->isScheduling())
         ) {
             usleep(null !== $timeout ? intval($timeout * 1) : 200000);
         }
+    }
+
+    public function isScheduling() 
+	{
+        return !$this->taskQueue->isEmpty();
     }
 
     /**
@@ -455,6 +455,16 @@ class Loop extends Scheduler implements LoopInterface
         if ($this->signals->count($signal) === 0) {
             \pcntl_signal($signal, \SIG_DFL);
         }
+    }
+
+    /**
+	 * Setup Signal listener.
+	 */
+	public function initSignals()
+	{		
+		if (!$this->signals && $this->pcntl) {
+			$this->signals = new Signaler();
+		}
     }
 
     public function isSignaling()
