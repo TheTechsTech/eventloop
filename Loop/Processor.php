@@ -20,12 +20,14 @@ class Processor
     private $finishCallback = null;
     private $failCallback = null;
     private static $pcntl = false;
+    private static $loop = null;
 	
     public function __construct(callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
     {        
         self::$pcntl = $this->isPcntl();
+        self::$loop = Loop::getInstance();
         $this->init($timedOutCallback,  $finishCallback,  $failCallback);
 		
 		if (self::$pcntl)
@@ -57,7 +59,7 @@ class Processor
         }
     }
 	
-    public function monitoring()
+    public function processing()
     {
         if ($this->processes) {
             foreach ($this->processes as $process) {                

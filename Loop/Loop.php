@@ -239,21 +239,21 @@ class Loop extends Scheduler implements LoopInterface
 		$this->runCoroutines();
         $nextTimeout = $this->runTimers();
         if ($this->process)
-            $this->process->monitoring();
+            $this->process->processing();
 				
         // Calculating how long runStreams should at most wait.
         if (!$block) {
             // Don't wait, only if running `processes`
-            $streamWait = $this->isMonitoring() ? $this->process->sleepingTime() : 0 ;
+            $streamWait = $this->isProcessing() ? $this->process->sleepingTime() : 0 ;
         } elseif ($this->addTicks) {
             // There's a pending 'addTick'. Don't wait.
             $streamWait = 0;
-        } elseif ($this->isMonitoring()) {
-            // There's a running 'processes', wait some before rechecking.
-            $streamWait = $this->process->sleepingTime();
         } elseif (is_numeric($nextTimeout)) {
             // Wait until the next Timeout should trigger.
             $streamWait = $nextTimeout * 1000000;
+        } elseif ($this->isProcessing()) {
+            // There's a running 'processes', wait some before rechecking.
+            $streamWait = $this->process->sleepingTime();
         } else {
             // Wait indefinitely
             $streamWait = null;
@@ -266,7 +266,7 @@ class Loop extends Scheduler implements LoopInterface
             || $this->addTicks
             || $this->timers
             || $this->isSignaling()
-            || $this->isMonitoring()
+            || $this->isProcessing()
             || $this->isScheduling();
     }
 
@@ -276,7 +276,7 @@ class Loop extends Scheduler implements LoopInterface
     public function stop()
     {
         $this->running = false;
-        $this->stopMonitoring();	
+        $this->stopProcessing();	
     }
 
     /**
@@ -342,7 +342,7 @@ class Loop extends Scheduler implements LoopInterface
             && ($this->addTicks 
                 || $this->timers 
                 || $this->isSignaling() 
-                || $this->isMonitoring() 
+                || $this->isProcessing() 
                 || $this->isScheduling())
         ) {
             usleep(null !== $timeout ? intval($timeout * 1) : 200000);
@@ -359,9 +359,9 @@ class Loop extends Scheduler implements LoopInterface
     * implementation requires `posix_kill` and `pcntl_async_signals`.
     *
     * If this extension is missing (or you're running on Windows), the 
-	* default monitoring status in while loop is used instead.
+	* default processing status in while loop is used instead.
     */	
-    public function addMonitor(ProcessInterface $process)
+    public function addProcess(ProcessInterface $process)
     {
         if (!$this->process)
             return;
@@ -369,7 +369,7 @@ class Loop extends Scheduler implements LoopInterface
         $this->process->add($process);		
     }
 
-    public function removeMonitor(ProcessInterface $process)
+    public function removeProcess(ProcessInterface $process)
     {
         if (!$this->process)
             return;
@@ -377,7 +377,7 @@ class Loop extends Scheduler implements LoopInterface
         $this->process->remove($process);	
     }
 	
-    public function initMonitor(Processor $process = null, 
+    public function initProcess(Processor $process = null, 
         callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
@@ -396,10 +396,10 @@ class Loop extends Scheduler implements LoopInterface
         callable $finishCallback = null, 
         callable $failCallback = null)
     {
-		return $this->initMonitor(null, $timedOutCallback, $finishCallback, $failCallback);
+		return $this->initProcess(null, $timedOutCallback, $finishCallback, $failCallback);
     }
 
-    public function isMonitoring()
+    public function isProcessing()
     {
         if (!$this->process)
             return;
@@ -407,7 +407,7 @@ class Loop extends Scheduler implements LoopInterface
         return !$this->process->isEmpty();
     }
 
-    public function stopMonitoring()
+    public function stopProcessing()
     {
         if (!$this->process)
             return;

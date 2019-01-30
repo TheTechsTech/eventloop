@@ -5,6 +5,8 @@
  */
 namespace Async\Loop;
 
+use Async\Loop\ProcessInterface;
+
 /**
  * A simple event loop implementation.
  *
@@ -113,7 +115,20 @@ interface LoopInterface
      * Add an function to run immediately at the next iteration of the loop.
      */
     public function addTick(callable $task);
-	
+
+    /**
+    * If you want to use process control handling, this event loop
+    * implementation requires `posix_kill` and `pcntl_async_signals`.
+    *
+    * If this extension is missing (or you're running on Windows), the 
+    * default processing status in while loop is used instead.
+    */	
+    public function addProcess(ProcessInterface $process);
+
+    public function removeProcess(ProcessInterface $process);
+
+    public function stopProcessing();
+
 	 /**
      * Register a listener to be notified when a signal has been caught by this process.
      *
