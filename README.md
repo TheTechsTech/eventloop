@@ -1,10 +1,8 @@
-Event Loop
-=====
+# Event Loop
 
 This library's core uses the [reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern) to handle normally [blocking I/O](https://nodejs.org/en/docs/guides/blocking-vs-non-blocking/#blocking) function/event __calls__.
 
-Concepts
----
+## Concepts
 
 [The Reactor and Singleton Pattern](https://youtu.be/pmtrUcPs4GQ) __video__
 
@@ -22,12 +20,15 @@ Like _Python_ and _JavaScript_, _PHP_ is single threaded. It can handle asynchro
 
 [What Is Async, How Does It Work, and When Should I Use It?](https://youtu.be/kdzL3r-yJZY) __video__
 
+[Common asynchronous patterns](https://youtu.be/jq2IFUQRbGo) __video__
+
 In order to have any async behavior programming, the based libraries needs to be interoperable, and they need to use the same event loop.
+
+This Event Loop is the basics for our asynchronous PHP programming packages: __[promisePlus](https://github.com/uppes/promisplus)__, __[parallel](https://github.com/uppes/parallel)__, and __[coroutine](https://github.com/uppes/coroutine)__.
 
 This component provides a common `LoopInterface` that any library can target. This allows them to be used in the same loop, with one single [`run()`](#run) call that is controlled by the user.
 
-**Table of Contents**
----
+### Table of Contents
 
 * [Quickstart example](#quickstart-example)
 * [Usage](#usage)
@@ -48,6 +49,9 @@ This component provides a common `LoopInterface` that any library can target. Th
     * [tick()](#tick)
     * [stop()](#stop)
     * [addTick()](#addTick)
+    * [addMonitor()](#addMonitor)
+    * [removeMonitor()](#removeMonitor)
+    * [stopMonitoring()](#stopMonitoring)
     * [addSignal()](#addsignal)
     * [removeSignal()](#removesignal)
 * [Install](#install)
@@ -55,4 +59,5 @@ This component provides a common `LoopInterface` that any library can target. Th
 * [License](#license)
 
 ## License
+
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
