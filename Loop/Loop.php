@@ -115,7 +115,7 @@ class Loop extends Scheduler implements LoopInterface
      */
     public function addTimeout(callable $task, float $timeout)
     {
-        $triggerTime = microtime(true) + ($timeout);
+        $triggerTime = \microtime(true) + ($timeout);
 
         if (!$this->timers) {
             // Special case when the timers array was empty.
@@ -128,10 +128,10 @@ class Loop extends Scheduler implements LoopInterface
         // array must be in reverse-order of trigger times.
         //
         // So here we search the array for the insertion point.
-        $index = count($this->timers) - 1;
+        $index = \count($this->timers) - 1;
         while (true) {
             if ($triggerTime < $this->timers[$index][0]) {
-                array_splice(
+                \array_splice(
                     $this->timers,
                     $index + 1,
                     0,
@@ -139,7 +139,7 @@ class Loop extends Scheduler implements LoopInterface
                 );
                 break;
             } elseif (0 === $index) {
-                array_unshift($this->timers, [$triggerTime, $task]);
+                \array_unshift($this->timers, [$triggerTime, $task]);
                 break;
             }
             --$index;
@@ -248,7 +248,7 @@ class Loop extends Scheduler implements LoopInterface
         } elseif ($this->addTicks) {
             // There's a pending 'addTick'. Don't wait.
             $streamWait = 0;
-        } elseif (is_numeric($nextTimeout)) {
+        } elseif (\is_numeric($nextTimeout)) {
             // Wait until the next Timeout should trigger.
             $streamWait = $nextTimeout * 1000000;
         } elseif ($this->isProcessing()) {
@@ -305,15 +305,15 @@ class Loop extends Scheduler implements LoopInterface
      */
     protected function runTimers()
     {
-        $now = microtime(true);
-        while (($timer = array_pop($this->timers)) && $timer[0] < $now) {
+        $now = \microtime(true);
+        while (($timer = \array_pop($this->timers)) && $timer[0] < $now) {
             $timer[1]();
         }
         // Add the last timer back to the array.
         if ($timer) {
             $this->timers[] = $timer;
 
-            return max(0, $timer[0] - microtime(true));
+            return \max(0, $timer[0] - \microtime(true));
         }
     }
 	
@@ -326,7 +326,7 @@ class Loop extends Scheduler implements LoopInterface
             $read = $this->readStreams;
             $write = $this->writeStreams;
             $except = null;
-            if (stream_select($read, $write, $except, (null === $timeout) ? null : 0, $timeout ? (int) ($timeout * 1000000) : 0)) {
+            if (\stream_select($read, $write, $except, (null === $timeout) ? null : 0, $timeout ? (int) ($timeout * 1000000) : 0)) {
                 // See PHP Bug https://bugs.php.net/bug.php?id=62452
                 // Fixed in PHP7
                 foreach ($read as $readStream) {

@@ -129,6 +129,8 @@ interface LoopInterface
 
     public function stopProcessing();
 
+    public function isProcessing();
+
 	 /**
      * Register a listener to be notified when a signal has been caught by this process.
      *

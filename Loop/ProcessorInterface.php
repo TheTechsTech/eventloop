@@ -32,7 +32,14 @@ interface ProcessorInterface
      * @return ProcessInterface
      */
     public function stop();
-
+	
+    /**
+     * Determines if the process has timed out, and only if an timeout has been set.
+     *
+     * @return bool
+     */
+    public function isTimedOut();
+	
     /**
      * Determines if the process is still running.
      *
@@ -73,6 +80,4 @@ interface ProcessorInterface
     public function triggerError();
 
     public function triggerTimeout();
-
-    public function getExecutionTime(): float;
 }

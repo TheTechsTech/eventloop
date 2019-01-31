@@ -14,7 +14,6 @@ use Async\Loop\ProcessorInterface;
 class Processor
 {
     private $processes = array();
-    private $timeout = 300;
     private $sleepTime = 25000;
     private $timedOutCallback = null;
     private $finishCallback = null;
@@ -63,10 +62,9 @@ class Processor
     {
         if ($this->processes) {
             foreach ($this->processes as $process) {                
-                if ($process->getExecutionTime() > $this->timeout) {
+                if ($process->isTimedOut()) {
                     $this->remove($process);
 					$markTimedOuted = $this->timedOutCallback;
-                    //$markTimedOuted($process);
 
                     self::$loop->addTick(function () use ($markTimedOuted, $process) {
                         $markTimedOuted($process);
@@ -76,8 +74,7 @@ class Processor
                 if (! self::$pcntl) {
 					if ($process->isSuccessful()) {
                         $this->remove($process);
-						$markFinished = $this->finishCallback;		
-						//$markFinished($process);
+						$markFinished = $this->finishCallback;
 
                         self::$loop->addTick(function () use ($markFinished, $process) {
                             $markFinished($process);
@@ -85,7 +82,6 @@ class Processor
 					} elseif (! $process->isRunning() && $process->isTerminated()) {
                         $this->remove($process);
 						$markFailed = $this->failCallback;
-						//$markFailed($process);
 
                         self::$loop->addTick(function () use ($markFailed, $process) {
                             $markFailed($process);
@@ -99,16 +95,6 @@ class Processor
     public function sleepTime(int $sleepTime)
     {
         $this->sleepTime = $sleepTime;
-    }
-
-    public function timeout(int $timeout)
-    {
-        $this->timeout = $timeout;
-    }
-
-    public function timingOut(): int 
-    {
-        return (int) $this->timeout;
     }
 	
     public function sleepingTime(): int
@@ -164,7 +150,6 @@ class Processor
                 if ($status['status'] === 0) {
                     $this->remove($process);
                     $markFinished = $this->finishCallback;
-                    //$markFinished($process);	
 
                     self::$loop->addTick(function () use ($markFinished, $process) {
                         $markFinished($process);
@@ -175,7 +160,6 @@ class Processor
 				
                 $this->remove($process);				
                 $markFailed = $this->failCallback;
-                //$markFailed($process);
 
                 self::$loop->addTick(function () use ($markFailed, $process) {
                     $markFailed($process);
@@ -187,18 +171,24 @@ class Processor
     private function callSuccess(ProcessorInterface $process)
     {
         $this->remove($process);
-        $process->triggerSuccess();
+		self::$loop->addTick(function () use ($process) {
+			$process->triggerSuccess();
+		});
     }
 
     private function callError(ProcessorInterface $process)
     {
         $this->remove($process);
-        $process->triggerError();
+		self::$loop->addTick(function () use ($process) {
+			$process->triggerError();
+		});
     }
 
     private function callTimeout(ProcessorInterface $process)
     {
         $this->remove($process);
-        $process->triggerTimeout();
+		self::$loop->addTick(function () use ($process) {
+			$process->triggerTimeout();
+		});
     }
 }
