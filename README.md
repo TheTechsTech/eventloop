@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/uppes/eventloop.svg?branch=master)](https://travis-ci.org/uppes/eventloop)[![codecov](https://codecov.io/gh/uppes/eventloop/branch/master/graph/badge.svg)](https://codecov.io/gh/uppes/eventloop)[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7659fbe7b5db43709973a7d61ba21b50)](https://www.codacy.com/app/techno-express/eventloop?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=uppes/eventloop&amp;utm_campaign=Badge_Grade)
+
 # Event Loop
 
 This library's core uses the [reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern) to handle normally [blocking I/O](https://nodejs.org/en/docs/guides/blocking-vs-non-blocking/#blocking) function/event __calls__.
