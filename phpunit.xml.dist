@@ -19,7 +19,6 @@
     <filter>
         <whitelist>
             <directory suffix=".php">Loop/</directory>
-            <directory suffix=".php">Coroutine/</directory>
         </whitelist>		
     </filter>
 	

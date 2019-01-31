@@ -28,12 +28,12 @@
         }
     ],
     "require": {
-        "php": ">7.0"
+        "php": ">7.0",
+		"uppes/coroutine": "*"
     },
     "autoload": {
         "psr-4": {
-			"Async\\Loop\\": "Loop/",
-			"Async\\Coroutine\\": "Coroutine/"
+			"Async\\Loop\\": "Loop/"
 		}
     },
     "require-dev": {
