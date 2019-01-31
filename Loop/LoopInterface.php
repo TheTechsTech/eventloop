@@ -5,7 +5,7 @@
  */
 namespace Async\Loop;
 
-use Async\Loop\ProcessInterface;
+use Async\Loop\ProcessorInterface;
 
 /**
  * A simple event loop implementation.
@@ -123,9 +123,9 @@ interface LoopInterface
     * If this extension is missing (or you're running on Windows), the 
     * default processing status in while loop is used instead.
     */	
-    public function addProcess(ProcessInterface $process);
+    public function addProcess(ProcessorInterface $process);
 
-    public function removeProcess(ProcessInterface $process);
+    public function removeProcess(ProcessorInterface $process);
 
     public function stopProcessing();
 

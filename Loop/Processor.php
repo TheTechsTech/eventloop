@@ -6,7 +6,7 @@
 namespace Async\Loop;
 
 use Async\Loop\Loop;
-use Async\Loop\ProcessInterface;
+use Async\Loop\ProcessorInterface;
 
 /**
  * @internal 
@@ -34,17 +34,17 @@ class Processor
             $this->registerListener();
     }
 
-    public function add(ProcessInterface $process)
+    public function add(ProcessorInterface $process)
     {
         $this->processes[$process->getPid()] = $process;		
     }
 
-    public function remove(ProcessInterface $process)
+    public function remove(ProcessorInterface $process)
     {
         unset($this->processes[$process->getPid()]);
     }
 
-    public function stop(ProcessInterface $process)
+    public function stop(ProcessorInterface $process)
     {
         $this->remove($process);
         $process->stop();
@@ -66,18 +66,30 @@ class Processor
                 if ($process->getExecutionTime() > $this->timeout) {
                     $this->remove($process);
 					$markTimedOuted = $this->timedOutCallback;
-                    $markTimedOuted($process);
+                    //$markTimedOuted($process);
+
+                    self::$loop->addTick(function () use ($markTimedOuted, $process) {
+                        $markTimedOuted($process);
+                    });
                 } 
                 
                 if (! self::$pcntl) {
 					if ($process->isSuccessful()) {
                         $this->remove($process);
 						$markFinished = $this->finishCallback;		
-						$markFinished($process);
+						//$markFinished($process);
+
+                        self::$loop->addTick(function () use ($markFinished, $process) {
+                            $markFinished($process);
+                        });
 					} elseif (! $process->isRunning() && $process->isTerminated()) {
                         $this->remove($process);
 						$markFailed = $this->failCallback;
-						$markFailed($process);
+						//$markFailed($process);
+
+                        self::$loop->addTick(function () use ($markFailed, $process) {
+                            $markFailed($process);
+                        });
 					}
                 }                
 			}
@@ -152,31 +164,39 @@ class Processor
                 if ($status['status'] === 0) {
                     $this->remove($process);
                     $markFinished = $this->finishCallback;
-                    $markFinished($process);	
+                    //$markFinished($process);	
+
+                    self::$loop->addTick(function () use ($markFinished, $process) {
+                        $markFinished($process);
+                    });
 
                     continue;
                 }
 				
                 $this->remove($process);				
                 $markFailed = $this->failCallback;
-                $markFailed($process);
+                //$markFailed($process);
+
+                self::$loop->addTick(function () use ($markFailed, $process) {
+                    $markFailed($process);
+                });
             }
         });
     }
 	
-    private function callSuccess(ProcessInterface $process)
+    private function callSuccess(ProcessorInterface $process)
     {
         $this->remove($process);
         $process->triggerSuccess();
     }
 
-    private function callError(ProcessInterface $process)
+    private function callError(ProcessorInterface $process)
     {
         $this->remove($process);
         $process->triggerError();
     }
 
-    private function callTimeout(ProcessInterface $process)
+    private function callTimeout(ProcessorInterface $process)
     {
         $this->remove($process);
         $process->triggerTimeout();

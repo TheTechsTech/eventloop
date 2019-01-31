@@ -11,7 +11,7 @@ use Async\Coroutine\Scheduler;
 use Async\Loop\Signaler;
 use Async\Loop\Processor;
 use Async\Loop\LoopInterface;
-use Async\Loop\ProcessInterface;
+use Async\Loop\ProcessorInterface;
 
 class Loop extends Scheduler implements LoopInterface
 {
@@ -361,7 +361,7 @@ class Loop extends Scheduler implements LoopInterface
     * If this extension is missing (or you're running on Windows), the 
 	* default processing status in while loop is used instead.
     */	
-    public function addProcess(ProcessInterface $process)
+    public function addProcess(ProcessorInterface $process)
     {
         if (!$this->process)
             return;
@@ -369,7 +369,7 @@ class Loop extends Scheduler implements LoopInterface
         $this->process->add($process);		
     }
 
-    public function removeProcess(ProcessInterface $process)
+    public function removeProcess(ProcessorInterface $process)
     {
         if (!$this->process)
             return;
