@@ -102,10 +102,7 @@ class Loop extends Scheduler implements LoopInterface
 			self::$loop->readStreams = [];
 			self::$loop->timers = [];		
 			self::$loop->process = null;	
-            if (self::$loop->signals && self::$loop->pcntl) {
-                self::$loop->signals = null;
-            }
-
+            self::$loop->signals = null;
 			self::$loop = null;	
 		}
 	}
