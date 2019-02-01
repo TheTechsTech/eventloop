@@ -65,7 +65,8 @@ class Loop extends Scheduler implements LoopInterface
     protected $writeCallbacks = [];	
 	
     private	static $loop; 
-    private $pcntl = false;
+    private $pcntl = false;    
+    private $pcntlActive = false;
     private $signals = null;
     private $process = null;
 	
@@ -463,8 +464,13 @@ class Loop extends Scheduler implements LoopInterface
 	public function initSignals()
 	{		
 		if (!$this->signals && $this->pcntl) {
-			$this->signals = new Signaler();
-		}
+            $this->signals = new Signaler();
+            
+            $this->pcntlActive  = $this->pcntl && !\function_exists('pcntl_async_signals');
+            if ($this->pcntl && !$this->pcntlActive) {
+                \pcntl_async_signals(true);
+            }
+        }        
     }
 
     public function isSignaling()
