@@ -79,6 +79,8 @@ class Processor
                         self::$loop->addTick(function () use ($markFinished, $process) {
                             $markFinished($process);
                         });
+					} elseif ($process->isRunning()) {
+                        continue;
 					} elseif (! $process->isRunning() && $process->isTerminated()) {
                         $this->remove($process);
 						$markFailed = $this->failCallback;
