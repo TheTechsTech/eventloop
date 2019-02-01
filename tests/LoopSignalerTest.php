@@ -44,6 +44,7 @@ class LoopSignalerTest extends TestCase
         $this->assertTrue(true);
     }
 	
+	
     public function testSignalMultipleUsagesForTheSameListener()
     {
         $loop = $this->loop;
@@ -51,10 +52,10 @@ class LoopSignalerTest extends TestCase
         $func = function () use (&$funcCallCount) {
             $funcCallCount++;
         };
-        $loop->addTimeout(function () {}, 1);
+        $loop->setInterval(function () {}, 1);
         $loop->addSignal(SIGUSR1, $func);
         $loop->addSignal(SIGUSR1, $func);
-        $loop->addTimeout(function () {
+        $loop->setInterval(function () {
             posix_kill(posix_getpid(), SIGUSR1);
         }, 0.4);
         $loop->addTimeout(function () use (&$func, $loop) {
@@ -69,7 +70,7 @@ class LoopSignalerTest extends TestCase
         $loop = $this->loop;
         $function = function () {};
         $loop->addSignal(SIGUSR1, $function);
-        $loop->addTimeout(function () use ($function, $loop) {
+        $loop->setInterval(function () use ($function, $loop) {
             $loop->removeSignal(SIGUSR1, $function);
             $loop->stop();
         }, 1.5);
