@@ -24,13 +24,12 @@ class Processor
     public function __construct(callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
-    {        
-        self::$pcntl = $this->isPcntl();
+    {
         self::$loop = Loop::getInstance();
         $this->init($timedOutCallback,  $finishCallback,  $failCallback);
 		
-		if (self::$pcntl)
-            $this->registerListener();
+		if ($this->isPcntl())
+            $this->registerProcessor();
     }
 
     public function add(ProcessorInterface $process)
@@ -125,19 +124,18 @@ class Processor
 	
     public static function isPcntl(): bool
     {
-        self::$pcntl = function_exists('pcntl_async_signals')
-            && function_exists('posix_kill');
+        self::$pcntl = Loop::isPcntl();
 		
         return self::$pcntl;
     }
 	
-    protected function registerListener()
+    protected function registerProcessor()
     {
-        pcntl_async_signals(true);
+        \pcntl_async_signals(true);
 
-        pcntl_signal(SIGCHLD, function ($signo, $status) {
+        \pcntl_signal(\SIGCHLD, function ($signo, $status) {
             while (true) {
-                $pid = pcntl_waitpid(-1, $processState, WNOHANG | WUNTRACED);
+                $pid = \pcntl_waitpid(-1, $processState, \WNOHANG | \WUNTRACED);
 
                 if ($pid <= 0) {
                     break;

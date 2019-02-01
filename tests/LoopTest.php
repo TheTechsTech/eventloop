@@ -7,14 +7,17 @@ use PHPUnit\Framework\TestCase;
 
 class LoopTest extends TestCase 
 {
+    protected $loop;
+
 	protected function setUp()
     {
 		Loop::clearInstance();
+        $this->loop = Loop::getInstance();
     }
 
     function testAddTick() 
 	{
-        $loop = new Loop();
+        $loop = $this->loop;
         $check  = 0;
         $loop->addTick(function() use (&$check) {
             $check++;
@@ -25,7 +28,7 @@ class LoopTest extends TestCase
 
     function testTimeout() 
 	{
-        $loop = new Loop();
+        $loop = $this->loop;
         $check  = 0;
         $loop->addTimeout(function() use (&$check) {
             $check++;
@@ -36,7 +39,7 @@ class LoopTest extends TestCase
 
     function testTimeoutOrder() 
 	{
-        $loop = new Loop();
+        $loop = $this->loop;
         $check  = [];
         $loop->addTimeout(function() use (&$check) {
             $check[] = 'a';
@@ -53,7 +56,7 @@ class LoopTest extends TestCase
 
     function testSetInterval() 
 	{
-        $loop = new Loop();
+        $loop = $this->loop;
         $check = 0;
         $intervalId = null;
         $intervalId = $loop->setInterval(function() use (&$check, &$intervalId, $loop) {
@@ -69,7 +72,7 @@ class LoopTest extends TestCase
     function testAddWriteStream() 
 	{
         $h = fopen('php://temp', 'r+');
-        $loop = new Loop();
+        $loop = $this->loop;
         $loop->addWriteStream($h, function() use ($h, $loop) {
             fwrite($h, 'hello world');
             $loop->removeWriteStream($h);
@@ -84,7 +87,7 @@ class LoopTest extends TestCase
         $h = fopen('php://temp', 'r+');
         fwrite($h, 'hello world');
         rewind($h);
-        $loop = new Loop();
+        $loop = $this->loop;
         $result = null;
         $loop->addReadStream($h, function() use ($h, $loop, &$result) {
             $result = fgets($h);
@@ -97,7 +100,7 @@ class LoopTest extends TestCase
     function testStop() 
 	{
         $check = 0;
-        $loop = new Loop();
+        $loop = $this->loop;
         $loop->addTimeout(function() use (&$check) {
             $check++;
         }, 200);
@@ -111,7 +114,7 @@ class LoopTest extends TestCase
     function testTick() 
 	{
         $check = 0;
-        $loop = new Loop();
+        $loop = $this->loop;
         $loop->addTimeout(function() use (&$check) {
             $check++;
         }, 1);
@@ -128,7 +131,7 @@ class LoopTest extends TestCase
      */
     function testAddStacking() 
 	{
-        $loop = new Loop();
+        $loop = $this->loop;
         $check  = 0;
         $loop->addTick(function() use (&$check, $loop) {
             $loop->addTick(function() use (&$check) {

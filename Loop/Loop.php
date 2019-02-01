@@ -64,16 +64,15 @@ class Loop extends Scheduler implements LoopInterface
      */
     protected $writeCallbacks = [];	
 	
-    private	static $loop; 
-    private $pcntl = false;    
-    private $pcntlActive = false;
+    private static $loop; 
+    private static $pcntl = false;
     private $signals = null;
     private $process = null;
 	
 	public function __construct()
     {
 		parent::__construct();		
-        $this->pcntl = \extension_loaded('pcntl');
+        self::$pcntl = $this->isPcntl();
 		self::$loop = $this;
     }
 	
@@ -431,7 +430,7 @@ class Loop extends Scheduler implements LoopInterface
         if (!$this->signals)
             return; 
 
-        if ($this->pcntl === false) {
+        if (self::$pcntl === false) {
             throw new \BadMethodCallException('Event loop feature "signals" isn\'t supported by "Stream_Select()"');
         }
         $first = $this->signals->count($signal) === 0;
@@ -446,7 +445,7 @@ class Loop extends Scheduler implements LoopInterface
         if (!$this->signals)
             return; 
 
-        if ($this->pcntl === false) {
+        if (self::$pcntl === false) {
             throw new \BadMethodCallException('Event loop feature "signals" isn\'t supported by "Stream_Select()"');
         }
         if (!$this->signals->count($signal)) {
@@ -463,13 +462,10 @@ class Loop extends Scheduler implements LoopInterface
 	 */
 	public function initSignals()
 	{		
-		if (!$this->signals && $this->pcntl) {
+		if (!$this->signals && self::$pcntl) {
             $this->signals = new Signaler();
             
-            $this->pcntlActive  = $this->pcntl && !\function_exists('pcntl_async_signals');
-            if ($this->pcntl && !$this->pcntlActive) {
-                \pcntl_async_signals(true);
-            }
+            \pcntl_async_signals(true);            
         }        
     }
 
@@ -479,5 +475,13 @@ class Loop extends Scheduler implements LoopInterface
             return; 
 
         return !$this->signals->isEmpty();
+    }
+
+    public static function isPcntl(): bool
+    {
+        self::$pcntl = \extension_loaded('pcntl') && \function_exists('pcntl_async_signals')
+        && \function_exists('posix_kill');
+		
+        return self::$pcntl;
     }
 }

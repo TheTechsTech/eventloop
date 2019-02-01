@@ -92,7 +92,7 @@ class LoopSignalerTest extends TestCase
         $loop = $this->loop;
         $function = function () {};
         $loop->addSignal(SIGUSR1, $function);
-        $loop->addTimeout(function () use ($function, $loop) {
+        $loop->setInterval(function () use ($function, $loop) {
             $loop->removeSignal(SIGUSR1, $function);
             $loop->stop();
         }, 1.5);
