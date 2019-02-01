@@ -7,10 +7,16 @@ use PHPUnit\Framework\TestCase;
 
 class LoopSignalerTest extends TestCase 
 {
+    protected $loop;
+
 	protected function setUp()
     {
-        //$this->markTestSkipped('Pause these tests for now.');
+        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
+            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
+        }
 		Loop::clearInstance();
+        $this->loop = Loop::getInstance();
+        $this->loop->initSignals();
     }
 
     private function assertRunFasterThan($maxInterval)
@@ -33,20 +39,14 @@ class LoopSignalerTest extends TestCase
 
     public function testRemoveSignalNotRegisteredIsNoOp()
     {
-        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
-            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
-        }
-        $loop = new Loop();
+        $loop = $this->loop;
         $loop->removeSignal(SIGINT, function () { });
         $this->assertTrue(true);
     }
 	
     public function testSignal()
     {
-        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
-            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
-        }
-        $loop = new Loop();
+        $loop = $this->loop;
         $called = false;
         $calledShouldNot = true;
         $timer = $loop->setInterval(function () {}, 1);
@@ -69,10 +69,7 @@ class LoopSignalerTest extends TestCase
 	
     public function testSignalMultipleUsagesForTheSameListener()
     {
-        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
-            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
-        }
-        $loop = new Loop();
+        $loop = $this->loop;
         $funcCallCount = 0;
         $func = function () use (&$funcCallCount) {
             $funcCallCount++;
@@ -92,10 +89,7 @@ class LoopSignalerTest extends TestCase
 	
     public function testSignalsKeepTheLoopRunning()
     {
-        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
-            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
-        }
-        $loop = new Loop();
+        $loop = $this->loop;
         $function = function () {};
         $loop->addSignal(SIGUSR1, $function);
         $loop->addTimeout(function () use ($function, $loop) {
@@ -108,10 +102,7 @@ class LoopSignalerTest extends TestCase
 	
     public function testSignalsKeepTheLoopRunningAndRemovingItStopsTheLoop()
     {
-        if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
-            $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');
-        }
-        $loop = new Loop();
+        $loop = $this->loop;
         $function = function () {};
         $loop->addSignal(SIGUSR1, $function);
         $loop->addTimeout(function () use ($function, $loop) {
