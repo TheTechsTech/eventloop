@@ -9,8 +9,26 @@ class LoopSignalerTest extends TestCase
 {
 	protected function setUp()
     {
-        $this->markTestSkipped('Pause these tests for now.');
+        //$this->markTestSkipped('Pause these tests for now.');
 		Loop::clearInstance();
+    }
+
+    private function assertRunFasterThan($maxInterval)
+    {
+        $start = microtime(true);
+        $this->loop->run();
+        $end = microtime(true);
+        $interval = $end - $start;
+        $this->assertLessThan($maxInterval, $interval);
+    }
+
+    private function assertRunSlowerThan($minInterval)
+    {
+        $start = microtime(true);
+        $this->loop->run();
+        $end = microtime(true);
+        $interval = $end - $start;
+        $this->assertLessThan($interval, $minInterval);
     }
 
     public function testRemoveSignalNotRegisteredIsNoOp()

@@ -28,8 +28,6 @@ interface ProcessorInterface
 
     /**
      * Stops the process.
-     *
-     * @return ProcessInterface
      */
     public function stop();
 	
