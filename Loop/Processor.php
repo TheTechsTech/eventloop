@@ -14,14 +14,15 @@ use Async\Loop\ProcessorInterface;
 class Processor
 {
     private $processes = array();
-    private $sleepTime = 25000;
+    private $sleepTime = 50000;
     private $timedOutCallback = null;
     private $finishCallback = null;
     private $failCallback = null;
     private static $pcntl = false;
     private static $loop = null;
 	
-    public function __construct(callable $timedOutCallback = null, 
+    public function __construct(
+        callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
     {
@@ -103,7 +104,8 @@ class Processor
         return $this->sleepTime;
     }
 	
-    public function init(callable $timedOutCallback = null, 
+    public function init(
+        callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
     {
@@ -117,9 +119,9 @@ class Processor
         return empty($this->processes);
     }
 	
-    public function processCount(): int
+    public function count(): int
     {
-        return count($this->processes);
+        return \count($this->processes);
     }
 	
     public static function isPcntl(): bool

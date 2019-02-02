@@ -323,18 +323,25 @@ class Loop extends Scheduler implements LoopInterface
             $read = $this->readStreams;
             $write = $this->writeStreams;
             $except = null;
-            if (\stream_select($read, $write, $except, (null === $timeout) ? null : 0, $timeout ? (int) ($timeout * 1000000) : 0)) {
+            if (\stream_select(
+                $read, 
+                $write, 
+                $except, 
+                (null === $timeout) ? null : 0, 
+                $timeout ? (int) ( $timeout * (($timeout === null) ? 1000000 : 1)) : 0)
+            ) {
                 // See PHP Bug https://bugs.php.net/bug.php?id=62452
                 // Fixed in PHP7
                 foreach ($read as $readStream) {
                     $readCb = $this->readCallbacks[(int) $readStream];
                     $readCb();
                 }
+
                 foreach ($write as $writeStream) {
                     $writeCb = $this->writeCallbacks[(int) $writeStream];
                     $writeCb();
                 }
-            }//
+            }
         } elseif ($this->running 
             && ($this->addTicks 
                 || $this->timers 
@@ -374,7 +381,8 @@ class Loop extends Scheduler implements LoopInterface
         $this->process->remove($process);	
     }
 	
-    public function initProcess(Processor $process = null, 
+    public function initProcess(
+        Processor $process = null, 
         callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
@@ -389,7 +397,8 @@ class Loop extends Scheduler implements LoopInterface
         return $this->process;
     }
 	
-    public function initProcessor(callable $timedOutCallback = null, 
+    public function initProcessor(
+        callable $timedOutCallback = null, 
         callable $finishCallback = null, 
         callable $failCallback = null)
     {
