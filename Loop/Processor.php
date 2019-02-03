@@ -119,7 +119,7 @@ class Processor
         return empty($this->processes);
     }
 	
-    public function getCount(): int
+    public function count(): int
     {
         return \count($this->processes);
     }
