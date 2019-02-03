@@ -3,15 +3,11 @@
     "description": "An library required for any asynchronous PHP programming.",
     "keywords": [
         "events",
-        "loop",
         "event loop",
         "event driven",
-        "tick",
         "next tick",
         "pcntl",
-        "process",
         "process control",
-        "stream",
         "stream select",
         "async",
         "asynchronous",
@@ -28,7 +24,7 @@
         }
     ],
     "require": {
-        "php": ">7.0",
+        "php": ">7.1",
 		"uppes/coroutine": "*"
     },
     "autoload": {
