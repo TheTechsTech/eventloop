@@ -172,25 +172,16 @@ class Processor
 	
     private function callSuccess(ProcessorInterface $process)
     {
-        $this->remove($process);
-		self::$loop->addTick(function () use ($process) {
-			$process->triggerSuccess();
-		});
+		$process->triggerSuccess();
     }
 
     private function callError(ProcessorInterface $process)
     {
-        $this->remove($process);
-		self::$loop->addTick(function () use ($process) {
-			$process->triggerError();
-		});
+		$process->triggerError();
     }
 
     private function callTimeout(ProcessorInterface $process)
     {
-        $this->remove($process);
-		self::$loop->addTick(function () use ($process) {
-			$process->triggerTimeout();
-		});
+		$process->triggerTimeout();
     }
 }
