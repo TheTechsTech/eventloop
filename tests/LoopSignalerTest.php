@@ -9,7 +9,7 @@ class LoopSignalerTest extends TestCase
 {
     protected $loop;
 
-	protected function setUp()
+	protected function setUp(): void
     {
         if (!function_exists('posix_kill') || !function_exists('posix_getpid')) {
             $this->markTestSkipped('Signal test skipped because functions "posix_kill" and "posix_getpid" are missing.');

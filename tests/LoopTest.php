@@ -9,7 +9,7 @@ class LoopTest extends TestCase
 {
     protected $loop;
 
-	protected function setUp()
+	protected function setUp(): void
     {
 		Loop::clearInstance();
         $this->loop = Loop::getInstance();
