@@ -72,23 +72,23 @@ class Processor
                 } 
                 
                 if (! self::$pcntl) {
-					if ($process->isSuccessful()) {
+					if ($process->isRunning()) {
+                        continue;
+					} elseif ($process->isSuccessful()) {
                         $this->remove($process);
 						$markFinished = $this->finishCallback;
 
                         self::$loop->addTick(function () use ($markFinished, $process) {
                             $markFinished($process);
                         });
-					} elseif ($process->isRunning()) {
-                        continue;
-					} elseif (! $process->isRunning() && $process->isTerminated()) {
-                        $this->remove($process);
-						$markFailed = $this->failCallback;
+                    }
+                    
+                    $this->remove($process);
+					$markFailed = $this->failCallback;
 
-                        self::$loop->addTick(function () use ($markFailed, $process) {
-                            $markFailed($process);
-                        });
-					}
+                    self::$loop->addTick(function () use ($markFailed, $process) {
+                        $markFailed($process);
+                    });
                 }                
 			}
         }

@@ -7,13 +7,14 @@ declare(strict_types=1);
 
 namespace Async\Loop;
 
-use Async\Coroutine\Scheduler;
 use Async\Loop\Signaler;
 use Async\Loop\Processor;
 use Async\Loop\LoopInterface;
 use Async\Loop\ProcessorInterface;
+use Async\Coroutine\Coroutine;
+use Async\Coroutine\TaskInterface;
 
-class Loop extends Scheduler implements LoopInterface
+class Loop extends Coroutine implements LoopInterface
 {
     /**
      * Is the main loop active.
@@ -177,7 +178,7 @@ class Loop extends Scheduler implements LoopInterface
     /**
      * Adds a read stream.
      */
-    public function addReadStream($stream, callable $task)
+    public function addReadStream($stream, $task)
     {
         $this->readStreams[(int) $stream] = $stream;
         $this->readCallbacks[(int) $stream] = $task;
@@ -186,7 +187,7 @@ class Loop extends Scheduler implements LoopInterface
     /**
      * Adds a write stream.
      */
-    public function addWriteStream($stream, callable $task)
+    public function addWriteStream($stream, $task)
     {
         $this->writeStreams[(int) $stream] = $stream;
         $this->writeCallbacks[(int) $stream] = $task;
@@ -264,7 +265,7 @@ class Loop extends Scheduler implements LoopInterface
             || $this->timers
             || $this->isSignaling()
             || $this->isProcessing()
-            || $this->isScheduling();
+            || $this->hasCoroutines();
     }
 
     /**
@@ -334,12 +335,22 @@ class Loop extends Scheduler implements LoopInterface
                 // Fixed in PHP7
                 foreach ($read as $readStream) {
                     $readCb = $this->readCallbacks[(int) $readStream];
-                    $readCb();
+                    if ($readCb instanceof TaskInterface) {
+                        $this->removeReadStream($readStream);
+                        $this->schedule($readCb);
+                    } else {
+                        $readCb();
+                    }
                 }
 
                 foreach ($write as $writeStream) {
                     $writeCb = $this->writeCallbacks[(int) $writeStream];
-                    $writeCb();
+                    if ($writeCb instanceof TaskInterface) {
+                        $this->removeWriteStream($writeStream);
+                        $this->schedule($writeCb);
+                    } else {
+                        $writeCb();
+                    }
                 }
             }
         } elseif ($this->running 
@@ -347,13 +358,13 @@ class Loop extends Scheduler implements LoopInterface
                 || $this->timers 
                 || $this->isSignaling() 
                 || $this->isProcessing() 
-                || $this->isScheduling())
+                || $this->hasCoroutines())
         ) {
             usleep(null !== $timeout ? intval($timeout * 1) : 200000);
         }
     }
 
-    public function isScheduling() 
+    public function hasCoroutines() 
 	{
         return !$this->taskQueue->isEmpty();
     }

@@ -52,7 +52,7 @@ interface LoopInterface
      *
      * @param resource $stream
      */
-    public function addReadStream($stream, callable $task);
+    public function addReadStream($stream, $task);
 
     /**
      * Adds a write stream.
@@ -65,7 +65,7 @@ interface LoopInterface
      *
      * @param resource $stream
      */
-    public function addWriteStream($stream, callable $task);
+    public function addWriteStream($stream, $task);
 	
     /**
      * Stop watching a stream for reads.
