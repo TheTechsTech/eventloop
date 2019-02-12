@@ -339,7 +339,7 @@ class Loop extends Coroutine implements LoopInterface
                         $this->removeReadStream($readStream);
                         $this->schedule($readCb);
                     } else {
-                        $readCb();
+                        $this->addTick($readCb);
                     }
                 }
 
@@ -349,7 +349,7 @@ class Loop extends Coroutine implements LoopInterface
                         $this->removeWriteStream($writeStream);
                         $this->schedule($writeCb);
                     } else {
-                        $writeCb();
+                        $this->addTick($writeCb);
                     }
                 }
             }
