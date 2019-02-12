@@ -19,6 +19,11 @@ use Async\Loop\ProcessorInterface;
 interface LoopInterface
 {
 	/**
+	 * The interval after which this timer will execute, in seconds
+	 */    
+    const MIN_INTERVAL = 0.000001;
+
+	/**
 	 * Retrieves current event Loop object.
 	 */
 	public static function getInstance();
