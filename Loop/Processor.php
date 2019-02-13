@@ -81,15 +81,15 @@ class Processor
                         self::$loop->addTick(function () use ($markFinished, $process) {
                             $markFinished($process);
                         });
-                    }
-                    
-                    $this->remove($process);
-					$markFailed = $this->failCallback;
+                    } elseif ($process->isTerminated()) {                    
+                        $this->remove($process);
+                        $markFailed = $this->failCallback;
 
-                    self::$loop->addTick(function () use ($markFailed, $process) {
-                        $markFailed($process);
-                    });
-                }                
+                        self::$loop->addTick(function () use ($markFailed, $process) {
+                            $markFailed($process);
+                        });
+                    } 
+                }
 			}
         }
     }
