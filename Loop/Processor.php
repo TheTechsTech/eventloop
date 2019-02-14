@@ -66,9 +66,7 @@ class Processor
                     $this->remove($process);
 					$markTimedOuted = $this->timedOutCallback;
 
-                    self::$loop->addTick(function () use ($markTimedOuted, $process) {
-                        $markTimedOuted($process);
-                    });
+                    self::$loop->addTask(\awaitAble($markTimedOuted, $process));
                 } 
                 
                 if (! self::$pcntl) {
@@ -78,16 +76,12 @@ class Processor
                         $this->remove($process);
 						$markFinished = $this->finishCallback;
 
-                        self::$loop->addTick(function () use ($markFinished, $process) {
-                            $markFinished($process);
-                        });
+                        self::$loop->addTask(\awaitAble($markFinished, $process));
                     } elseif ($process->isTerminated()) {                    
                         $this->remove($process);
                         $markFailed = $this->failCallback;
 
-                        self::$loop->addTick(function () use ($markFailed, $process) {
-                            $markFailed($process);
-                        });
+                        self::$loop->addTask(\awaitAble($markFailed, $process));
                     } 
                 }
 			}
@@ -153,9 +147,7 @@ class Processor
                     $this->remove($process);
                     $markFinished = $this->finishCallback;
 
-                    self::$loop->addTick(function () use ($markFinished, $process) {
-                        $markFinished($process);
-                    });
+                    self::$loop->addTask(\awaitAble($markFinished, $process));
 
                     continue;
                 }
@@ -163,9 +155,7 @@ class Processor
                 $this->remove($process);				
                 $markFailed = $this->failCallback;
 
-                self::$loop->addTick(function () use ($markFailed, $process) {
-                    $markFailed($process);
-                });
+                self::$loop->addTask(\awaitAble($markFailed, $process));
             }
         });
     }
