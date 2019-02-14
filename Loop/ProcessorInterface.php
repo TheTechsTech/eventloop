@@ -44,9 +44,9 @@ interface ProcessorInterface
      */
     public function isTerminated();
 	
-    public function triggerSuccess($isGenerator = false);
+    public function triggerSuccess();
 
-    public function triggerError($isGenerator = false);
+    public function triggerError();
 
-    public function triggerTimeout($isGenerator = false);
+    public function triggerTimeout();
 }
