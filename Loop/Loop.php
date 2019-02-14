@@ -36,34 +36,6 @@ class Loop extends Coroutine implements LoopInterface
      * @var callable[]
      */
     protected $addTicks = [];
-
-    /**
-     * List of readable streams for stream_select, indexed by stream id.
-     *
-     * @var resource[]
-     */
-    protected $readStreams = [];
-
-    /**
-     * List of writable streams for stream_select, indexed by stream id.
-     *
-     * @var resource[]
-     */
-    protected $writeStreams = [];
-
-    /**
-     * List of read callbacks, indexed by stream id.
-     *
-     * @var callback[]
-     */
-    protected $readCallbacks = [];
-
-    /**
-     * List of write callbacks, indexed by stream id.
-     *
-     * @var callback[]
-     */
-    protected $writeCallbacks = [];	
 	
     private static $loop; 
     private static $pcntl = false;
@@ -173,46 +145,6 @@ class Loop extends Coroutine implements LoopInterface
     public function clearInterval(array $intervalId)
     {
         $intervalId[1] = false;
-    }
-
-    /**
-     * Adds a read stream.
-     */
-    public function addReadStream($stream, $task)
-    {
-        $this->readStreams[(int) $stream] = $stream;
-        $this->readCallbacks[(int) $stream] = $task;
-    }
-
-    /**
-     * Adds a write stream.
-     */
-    public function addWriteStream($stream, $task)
-    {
-        $this->writeStreams[(int) $stream] = $stream;
-        $this->writeCallbacks[(int) $stream] = $task;
-    }
-
-    /**
-     * Stop watching a stream for reads.
-     */
-    public function removeReadStream($stream)
-    {
-        unset(
-            $this->readStreams[(int) $stream],
-            $this->readCallbacks[(int) $stream]
-        );
-    }
-
-    /**
-     * Stop watching a stream for writes.
-     */
-    public function removeWriteStream($stream)
-    {
-        unset(
-            $this->writeStreams[(int) $stream],
-            $this->writeCallbacks[(int) $stream]
-        );
     }
 
     /**

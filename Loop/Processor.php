@@ -14,7 +14,7 @@ use Async\Loop\ProcessorInterface;
 class Processor
 {
     private $processes = array();
-    private $sleepTime = 50000;
+    private $sleepTime = 30000;
     private $timedOutCallback = null;
     private $finishCallback = null;
     private $failCallback = null;
@@ -67,7 +67,7 @@ class Processor
 					$markTimedOuted = $this->timedOutCallback;
 
                     if (! method_exists($markTimedOuted, 'callTimeout'))
-                        self::$loop->addTask(\awaitAble($markTimedOuted, $process));
+                        self::$loop->addTask($markTimedOuted($process));
                     else
                         self::$loop->addTick(function () use ($markTimedOuted, $process) {
                             $markTimedOuted($process);
@@ -82,7 +82,7 @@ class Processor
 						$markFinished = $this->finishCallback;
 
                         if (! method_exists($markFinished, 'callSuccess'))
-                            self::$loop->addTask(\awaitAble($markFinished, $process));
+                            self::$loop->addTask($markFinished($process));
                         else
                             self::$loop->addTick(function () use ($markFinished, $process) {
                                 $markFinished($process);
@@ -92,7 +92,7 @@ class Processor
                         $markFailed = $this->failCallback;
 
                         if (! method_exists($markFailed, 'callError'))
-                            self::$loop->addTask(\awaitAble($markFailed, $process));
+                            self::$loop->addTask($markFailed($process));
                         else
                             self::$loop->addTick(function () use ($markFailed, $process) {
                                 $markFailed($process);
@@ -163,7 +163,7 @@ class Processor
                     $markFinished = $this->finishCallback;
 
                     if (! method_exists($markFinished, 'callSuccess'))
-                        self::$loop->addTask(\awaitAble($markFinished, $process));
+                        self::$loop->addTask($markFinished($process));
                     else
                         self::$loop->addTick(function () use ($markFinished, $process) {
                             $markFinished($process);
@@ -172,11 +172,11 @@ class Processor
                     continue;
                 }
 				
-                $this->remove($process);				
+                $this->remove($process);
                 $markFailed = $this->failCallback;
 
                 if (! method_exists($markFailed, 'callError'))
-                    self::$loop->addTask(\awaitAble($markFailed, $process));
+                    self::$loop->addTask($markFailed($process));
                 else
                     self::$loop->addTick(function () use ($markFailed, $process) {
                         $markFailed($process);
