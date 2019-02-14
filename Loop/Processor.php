@@ -162,7 +162,7 @@ class Processor
                     $this->remove($process);
                     $markFinished = $this->finishCallback;
 
-                    if (! method_exists($markFinished,'callSuccess'))
+                    if (! method_exists($markFinished, 'callSuccess'))
                         self::$loop->addTask(\awaitAble($markFinished, $process));
                     else
                         self::$loop->addTick(function () use ($markFinished, $process) {
@@ -175,7 +175,7 @@ class Processor
                 $this->remove($process);				
                 $markFailed = $this->failCallback;
 
-                if (! method_exists($markFinished, 'callError'))
+                if (! method_exists($markFailed, 'callError'))
                     self::$loop->addTask(\awaitAble($markFailed, $process));
                 else
                     self::$loop->addTick(function () use ($markFailed, $process) {
