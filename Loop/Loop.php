@@ -82,6 +82,9 @@ class Loop extends Coroutine implements LoopInterface
 				
     /**
      * Executes a function after x seconds.
+     * 
+     * @param callable $task
+     * @param float $timeout
      */
     public function addTimeout(callable $task, float $timeout)
     {
@@ -237,8 +240,13 @@ class Loop extends Coroutine implements LoopInterface
     {
         $now = \microtime(true);
         while (($timer = \array_pop($this->timers)) && $timer[0] < $now) {
-            $timer[1]();
+            if ($timer[1] instanceof TaskInterface) {
+                $this->schedule($timer[1]);
+            } else {
+                $timer[1]();
+            }
         }
+
         // Add the last timer back to the array.
         if ($timer) {
             $this->timers[] = $timer;
@@ -271,7 +279,7 @@ class Loop extends Coroutine implements LoopInterface
                         $this->removeReadStream($readStream);
                         $this->schedule($readCb);
                     } else {
-                        $this->addTick($readCb);
+                        $readCb();
                     }
                 }
 
@@ -281,7 +289,7 @@ class Loop extends Coroutine implements LoopInterface
                         $this->removeWriteStream($writeStream);
                         $this->schedule($writeCb);
                     } else {
-                        $this->addTick($writeCb);
+                        $writeCb();
                     }
                 }
             }
