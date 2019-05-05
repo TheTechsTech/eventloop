@@ -169,15 +169,13 @@ class Loop extends Coroutine implements LoopInterface
     public function tick(bool $block = false): bool
     {
         $this->runTicks();
-		$this->runCoroutines();
+		$this->runCoroutines(true);
         $nextTimeout = $this->runTimers();
-        if ($this->process)
-            $this->process->processing();
 				
         // Calculating how long runStreams should at most wait.
         if (!$block) {
-            // Don't wait, only if running `processes`
-            $streamWait = $this->isProcessing() ? $this->process->sleepingTime() : 0 ;
+            // Don't wait, only if running `process`
+            $streamWait = $this->isProcessing() ? $this->process->sleepingTime() : 0;
         } elseif ($this->addTicks) {
             // There's a pending 'addTick'. Don't wait.
             $streamWait = 0;
@@ -185,7 +183,7 @@ class Loop extends Coroutine implements LoopInterface
             // Wait until the next Timeout should trigger.
             $streamWait = $nextTimeout * 1000000;
         } elseif ($this->isProcessing()) {
-            // There's a running 'processes', wait some before rechecking.
+            // There's a running 'process', wait some before rechecking.
             $streamWait = $this->process->sleepingTime();
         } else {
             // Wait indefinitely
@@ -209,7 +207,7 @@ class Loop extends Coroutine implements LoopInterface
     public function stop()
     {
         $this->running = false;
-        $this->stopProcessing();	
+        $this->stopProcessing();
     }
 
     /**
@@ -229,7 +227,7 @@ class Loop extends Coroutine implements LoopInterface
         $this->addTicks = [];
 
         foreach ($addTicks as $task) {
-             $task();
+            $task();
         }
     }
 	
@@ -296,8 +294,8 @@ class Loop extends Coroutine implements LoopInterface
         } elseif ($this->running 
             && ($this->addTicks 
                 || $this->timers 
-                || $this->isSignaling() 
-                || $this->isProcessing() 
+                || $this->isSignaling()
+                || $this->isProcessing()
                 || $this->hasCoroutines())
         ) {
             usleep(null !== $timeout ? intval($timeout * 1) : 200000);
@@ -307,53 +305,6 @@ class Loop extends Coroutine implements LoopInterface
     public function hasCoroutines() 
 	{
         return !$this->taskQueue->isEmpty();
-    }
-
-    /**
-    * If you want to use process control handling, this event loop
-    * implementation requires `posix_kill` and `pcntl_async_signals`.
-    *
-    * If this extension is missing (or you're running on Windows), the 
-	* default processing status in while loop is used instead.
-    */	
-    public function addProcess(ProcessorInterface $process)
-    {
-        if (!$this->process)
-            return;
-
-        $this->process->add($process);		
-    }
-
-    public function removeProcess(ProcessorInterface $process)
-    {
-        if (!$this->process)
-            return;
-
-        $this->process->remove($process);	
-    }
-	
-    public function initProcess(
-        Processor $process = null, 
-        callable $timedOutCallback = null, 
-        callable $finishCallback = null, 
-        callable $failCallback = null)
-    {
-        if (!empty($process) && ($process === $this->process)) {
-            $this->process->init($timedOutCallback, $finishCallback, $failCallback);
-            return $this->process;
-        }
-
-        $this->process = new Processor();
-        $this->process->init($timedOutCallback, $finishCallback, $failCallback);
-        return $this->process;
-    }
-	
-    public function initProcessor(
-        callable $timedOutCallback = null, 
-        callable $finishCallback = null, 
-        callable $failCallback = null)
-    {
-		return $this->initProcess(null, $timedOutCallback, $finishCallback, $failCallback);
     }
 
     public function isProcessing()
@@ -370,8 +321,8 @@ class Loop extends Coroutine implements LoopInterface
             return;
 
         $this->process->stopAll();
-    }    	
-	
+    }
+    
     /**
     * If you want to use signal handling (see also [`addSignal()`](#addSignal) below),
     * this event loop implementation requires `ext-pcntl`.
