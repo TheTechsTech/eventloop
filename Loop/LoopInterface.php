@@ -121,17 +121,6 @@ interface LoopInterface
      */
     public function addTick(callable $task);
 
-    /**
-    * If you want to use process control handling, this event loop
-    * implementation requires `posix_kill` and `pcntl_async_signals`.
-    *
-    * If this extension is missing (or you're running on Windows), the 
-    * default processing status in while loop is used instead.
-    */	
-    public function addProcess(ProcessorInterface $process);
-
-    public function removeProcess(ProcessorInterface $process);
-
     public function stopProcessing();
 
     public function isProcessing();

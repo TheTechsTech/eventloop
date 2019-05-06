@@ -8,9 +8,7 @@ declare(strict_types=1);
 namespace Async\Loop;
 
 use Async\Loop\Signaler;
-use Async\Loop\Processor;
 use Async\Loop\LoopInterface;
-use Async\Loop\ProcessorInterface;
 use Async\Coroutine\Coroutine;
 use Async\Coroutine\TaskInterface;
 
@@ -38,14 +36,14 @@ class Loop extends Coroutine implements LoopInterface
     protected $addTicks = [];
 	
     private static $loop; 
-    private static $pcntl = false;
+    protected $pcntl = null;
+    protected $process = null;
     private $signals = null;
-    private $process = null;
 	
 	public function __construct()
     {
 		parent::__construct();		
-        self::$pcntl = $this->isPcntl();
+        $this->pcntl = $this->isPcntl();
 		self::$loop = $this;
     }
 	
@@ -338,7 +336,7 @@ class Loop extends Coroutine implements LoopInterface
         if (!$this->signals)
             return; 
 
-        if (self::$pcntl === false) {
+        if ($this->pcntl === false) {
             throw new \BadMethodCallException('Event loop feature "signals" isn\'t supported by "Stream_Select()"');
         }
         $first = $this->signals->count($signal) === 0;
@@ -353,7 +351,7 @@ class Loop extends Coroutine implements LoopInterface
         if (!$this->signals)
             return; 
 
-        if (self::$pcntl === false) {
+        if ($this->pcntl === false) {
             throw new \BadMethodCallException('Event loop feature "signals" isn\'t supported by "Stream_Select()"');
         }
         if (!$this->signals->count($signal)) {
@@ -370,7 +368,7 @@ class Loop extends Coroutine implements LoopInterface
 	 */
 	public function initSignals()
 	{		
-		if (!$this->signals && self::$pcntl) {
+		if (!$this->signals && $this->pcntl) {
             $this->signals = new Signaler();
             
             \pcntl_async_signals(true);            
@@ -385,11 +383,11 @@ class Loop extends Coroutine implements LoopInterface
         return !$this->signals->isEmpty();
     }
 
-    public static function isPcntl(): bool
+    public function isPcntl(): bool
     {
-        self::$pcntl = \extension_loaded('pcntl') && \function_exists('pcntl_async_signals')
+        $this->pcntl = \extension_loaded('pcntl') && \function_exists('pcntl_async_signals')
         && \function_exists('posix_kill');
 		
-        return self::$pcntl;
+        return $this->pcntl;
     }
 }
