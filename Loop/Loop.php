@@ -9,10 +9,8 @@ namespace Async\Loop;
 
 use Async\Loop\Signaler;
 use Async\Loop\LoopInterface;
-use Async\Coroutine\Coroutine;
-use Async\Coroutine\TaskInterface;
 
-class Loop extends Coroutine implements LoopInterface
+class Loop implements LoopInterface
 {
     /**
      * Is the main loop active.
@@ -34,15 +32,41 @@ class Loop extends Coroutine implements LoopInterface
      * @var callable[]
      */
     protected $addTicks = [];
-	
+
+    /**
+     * List of readable streams for stream_select, indexed by stream id.
+     *
+     * @var resource[]
+     */
+    protected $readStreams = [];
+
+    /**
+     * List of writable streams for stream_select, indexed by stream id.
+     *
+     * @var resource[]
+     */
+    protected $writeStreams = [];
+
+    /**
+     * List of read callbacks, indexed by stream id.
+     *
+     * @var callback[]
+     */
+    protected $readCallbacks = [];
+
+    /**
+     * List of write callbacks, indexed by stream id.
+     *
+     * @var callback[]
+     */
+    protected $writeCallbacks = [];	
+
     private static $loop; 
     protected $pcntl = null;
-    protected $process = null;
     private $signals = null;
 	
 	public function __construct()
     {
-		parent::__construct();		
         $this->pcntl = $this->isPcntl();
 		self::$loop = $this;
     }
@@ -71,8 +95,7 @@ class Loop extends Coroutine implements LoopInterface
 			self::$loop->readCallbacks = [];
 			self::$loop->writeStreams = [];
 			self::$loop->readStreams = [];
-			self::$loop->timers = [];		
-			self::$loop->process = null;	
+			self::$loop->timers = [];
             self::$loop->signals = null;
 			self::$loop = null;	
 		}
@@ -147,6 +170,46 @@ class Loop extends Coroutine implements LoopInterface
     {
         $intervalId[1] = false;
     }
+    
+    /**
+     * Adds a read stream.
+     */
+    public function addReadStream($stream, $task)
+    {
+        $this->readStreams[(int) $stream] = $stream;
+        $this->readCallbacks[(int) $stream] = $task;
+    }
+
+    /**
+     * Adds a write stream.
+     */
+    public function addWriteStream($stream, $task)
+    {
+        $this->writeStreams[(int) $stream] = $stream;
+        $this->writeCallbacks[(int) $stream] = $task;
+    }
+
+    /**
+     * Stop watching a stream for reads.
+     */
+    public function removeReadStream($stream)
+    {
+        unset(
+            $this->readStreams[(int) $stream],
+            $this->readCallbacks[(int) $stream]
+        );
+    }
+
+    /**
+     * Stop watching a stream for writes.
+     */
+    public function removeWriteStream($stream)
+    {
+        unset(
+            $this->writeStreams[(int) $stream],
+            $this->writeCallbacks[(int) $stream]
+        );
+    }
 
     /**
      * Runs the loop.
@@ -167,22 +230,18 @@ class Loop extends Coroutine implements LoopInterface
     public function tick(bool $block = false): bool
     {
         $this->runTicks();
-		$this->runCoroutines(true);
         $nextTimeout = $this->runTimers();
 				
         // Calculating how long runStreams should at most wait.
         if (!$block) {
-            // Don't wait, only if running `process`
-            $streamWait = $this->isProcessing() ? $this->process->sleepingTime() : 0;
+            // Don't wait
+            $streamWait = 0;
         } elseif ($this->addTicks) {
             // There's a pending 'addTick'. Don't wait.
             $streamWait = 0;
         } elseif (\is_numeric($nextTimeout)) {
             // Wait until the next Timeout should trigger.
             $streamWait = $nextTimeout * 1000000;
-        } elseif ($this->isProcessing()) {
-            // There's a running 'process', wait some before rechecking.
-            $streamWait = $this->process->sleepingTime();
         } else {
             // Wait indefinitely
             $streamWait = null;
@@ -194,9 +253,7 @@ class Loop extends Coroutine implements LoopInterface
             || $this->writeStreams
             || $this->addTicks
             || $this->timers
-            || $this->isSignaling()
-            || $this->isProcessing()
-            || $this->hasCoroutines();
+            || $this->isSignaling();
     }
 
     /**
@@ -205,7 +262,6 @@ class Loop extends Coroutine implements LoopInterface
     public function stop()
     {
         $this->running = false;
-        $this->stopProcessing();
     }
 
     /**
@@ -236,11 +292,7 @@ class Loop extends Coroutine implements LoopInterface
     {
         $now = \microtime(true);
         while (($timer = \array_pop($this->timers)) && $timer[0] < $now) {
-            if ($timer[1] instanceof TaskInterface) {
-                $this->schedule($timer[1]);
-            } else {
-                $timer[1]();
-            }
+            $timer[1]();
         }
 
         // Add the last timer back to the array.
@@ -271,54 +323,21 @@ class Loop extends Coroutine implements LoopInterface
                 // Fixed in PHP7
                 foreach ($read as $readStream) {
                     $readCb = $this->readCallbacks[(int) $readStream];
-                    if ($readCb instanceof TaskInterface) {
-                        $this->removeReadStream($readStream);
-                        $this->schedule($readCb);
-                    } else {
-                        $readCb();
-                    }
+                    $readCb();
                 }
 
                 foreach ($write as $writeStream) {
                     $writeCb = $this->writeCallbacks[(int) $writeStream];
-                    if ($writeCb instanceof TaskInterface) {
-                        $this->removeWriteStream($writeStream);
-                        $this->schedule($writeCb);
-                    } else {
-                        $writeCb();
-                    }
+                    $writeCb();
                 }
             }
         } elseif ($this->running 
             && ($this->addTicks 
                 || $this->timers 
-                || $this->isSignaling()
-                || $this->isProcessing()
-                || $this->hasCoroutines())
+                || $this->isSignaling())
         ) {
             usleep(null !== $timeout ? intval($timeout * 1) : 200000);
         }
-    }
-
-    public function hasCoroutines() 
-	{
-        return !$this->taskQueue->isEmpty();
-    }
-
-    public function isProcessing()
-    {
-        if (!$this->process)
-            return;
-
-        return !$this->process->isEmpty();
-    }
-
-    public function stopProcessing()
-    {
-        if (!$this->process)
-            return;
-
-        $this->process->stopAll();
     }
     
     /**

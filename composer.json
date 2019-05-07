@@ -1,18 +1,14 @@
 {
     "name": "uppes/eventloop",
-    "description": "An library required for any asynchronous PHP programming.",
+    "description": "An event loop library for asynchronous PHP programming.",
     "keywords": [
         "events",
         "event loop",
         "event driven",
         "next tick",
         "pcntl",
-        "process control",
         "stream select",
-        "async",
-        "asynchronous",
-        "coroutine",
-        "generators"
+        "asynchronous"
     ],
     "homepage": "https://github.com/uppes/eventloop",
     "type": "library",
@@ -24,8 +20,7 @@
         }
     ],
     "require": {
-        "php": ">7.1",
-		"uppes/coroutine": "^1.0.0"
+        "php": ">7.0"
     },
     "autoload": {
         "psr-4": {

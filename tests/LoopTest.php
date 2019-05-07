@@ -69,6 +69,34 @@ class LoopTest extends TestCase
         $this->assertEquals(6, $check);
     }
 
+    function testAddWriteStream() 
+	{
+        $h = fopen('php://temp', 'r+');
+        $loop = $this->loop;
+        $loop->addWriteStream($h, function() use ($h, $loop) {
+            fwrite($h, 'hello world');
+            $loop->removeWriteStream($h);
+        });
+        $loop->run();
+        rewind($h);
+        $this->assertEquals('hello world', stream_get_contents($h));
+    }
+
+    function testAddReadStream() 
+	{
+        $h = fopen('php://temp', 'r+');
+        fwrite($h, 'hello world');
+        rewind($h);
+        $loop = $this->loop;
+        $result = null;
+        $loop->addReadStream($h, function() use ($h, $loop, &$result) {
+            $result = fgets($h);
+            $loop->removeReadStream($h);
+        });
+        $loop->run();
+        $this->assertEquals('hello world', $result);
+    }
+
     function testStop() 
 	{
         $check = 0;
