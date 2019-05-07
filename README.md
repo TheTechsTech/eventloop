@@ -26,7 +26,7 @@ Like _Python_ and _JavaScript_, _PHP_ is single threaded. It can handle asynchro
 
 In order to have any async behavior programming, the based libraries needs to be interoperable, and they need to use the same event loop.
 
-This Event Loop is the basics for our asynchronous PHP programming packages: __[promisePlus](https://github.com/uppes/promisplus)__, __[parallel](https://github.com/uppes/parallel)__, and __[coroutine](https://github.com/uppes/coroutine)__.
+This Event Loop form the the basics for our __[Promise/A+](https://github.com/uppes/promisplus)__ package.
 
 This component provides a common `LoopInterface` that any library can target. This allows them to be used in the same loop, with one single [`run()`](#run) call that is controlled by the user.
 
@@ -51,9 +51,6 @@ This component provides a common `LoopInterface` that any library can target. Th
     * [tick()](#tick)
     * [stop()](#stop)
     * [addTick()](#addTick)
-    * [addProcess()](#addProcess)
-    * [removeProcess()](#removeProcess)
-    * [stopProcessing()](#stopProcessing)
     * [addSignal()](#addsignal)
     * [removeSignal()](#removesignal)
 * [Install](#install)
